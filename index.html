@@ -864,7 +864,25 @@
 
             startTimer();
             loadQuestion();
-        }
-    </script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw8GHB1iFxxsweay2qwmglU6oEn4xXG0F-s4ijVW3Ja8S2uf8bSRSGV1OpSiLC.../exec";
+
+function sendResultToSheets(studentName, studentScore, totalQuestions) {
+  fetch(SCRIPT_URL, {
+    method: "POST",
+    mode: "no-cors",
+    headers: {
+      "Content-Type": "application/json"
+    
+    body: JSON.stringify({
+      name: studentName,
+      score: studentScore,
+      total: totalQuestions
+    })
+  })
+  .then(() => alert("Үр дүн амжилттай илгээгдлээ!"))
+  .catch(err => console.error("Алдаа гарлаа:", err));
+}
+    sendResultToSheets(userName || "Сурагч", score, questions.length);
+        </script>
 </body>
 </html>
