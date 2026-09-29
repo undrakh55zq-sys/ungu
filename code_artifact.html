@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>8-р анги: Дүрслэх урлаг - Өнгө судлал (Блүмийн таксономи)</title>
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
+            --card-bg: rgba(30, 41, 59, 0.85);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --correct-bg: #10b981;
+            --incorrect-bg: #ef4444;
+            --bloom-remember: #3b82f6;
+            --bloom-understand: #06b6d4;
+            --bloom-apply: #10b981;
+            --bloom-analyze: #f59e0b;
+            --bloom-evaluate: #ec4899;
+            --bloom-create: #8b5cf6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        header {
+            width: 100%;
+            max-width: 900px;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .header-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--card-border);
+            border-radius: 1rem;
+            padding: 1.2rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .header-title-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        .palette-icon {
+            width: 32px;
+            height: 32px;
+            fill: #f43f5e;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #f43f5e, #a855f7, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .sub-header {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.6);
+            padding: 0.6rem 1.2rem;
+            border-radius: 0.75rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .timer-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            color: #fbbf24;
+            background: rgba(251, 191, 36, 0.1);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            border: 1px solid rgba(251, 191, 36, 0.3);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .quiz-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--card-border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+            position: relative;
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .bloom-badge {
+            font-size: 0.8rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #fff;
+        }
+
+        .bloom-1 { background-color: var(--bloom-remember); }
+        .bloom-2 { background-color: var(--bloom-understand); }
+        .bloom-3 { background-color: var(--bloom-apply); }
+        .bloom-4 { background-color: var(--bloom-analyze); }
+        .bloom-5 { background-color: var(--bloom-evaluate); }
+        .bloom-6 { background-color: var(--bloom-create); }
+
+        .question-text {
+            font-size: 1.15rem;
+            line-height: 1.5;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.75rem;
+        }
+
+        @media (min-width: 640px) {
+            .options-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .option-btn {
+            background: rgba(51, 65, 85, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            position: relative;
+            outline: none;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background: rgba(71, 85, 105, 0.9);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .option-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+
+        .option-prefix {
+            background: rgba(255, 255, 255, 0.1);
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+
+        .option-btn.correct {
+            background: var(--correct-bg) !important;
+            border-color: #34d399 !important;
+            color: #ffffff !important;
+            font-weight: 600;
+        }
+
+        .option-btn.incorrect {
+            background: var(--incorrect-bg) !important;
+            border-color: #f87171 !important;
+            color: #ffffff !important;
+        }
+
+        .explanation-box {
+            background: rgba(15, 23, 42, 0.8);
+            border-left: 4px solid var(--primary-color);
+            padding: 1rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+            margin-top: 0.5rem;
+        }
+
+        .explanation-box.show {
+            display: block;
+        }
+
+        .explanation-title {
+            font-weight: 700;
+            margin-bottom: 0.3rem;
+            color: #38bdf8;
+            font-size: 0.95rem;
+        }
+
+        .explanation-text {
+            font-size: 0.9rem;
+            line-height: 1.4;
+            color: #cbd5e1;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 1rem;
+        }
+
+        .next-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: none;
+        }
+
+        .next-btn:hover {
+            background: var(--primary-hover);
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
+            transition: width 0.3s ease;
+        }
+
+        .results-card {
+            display: none;
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--card-border);
+            border-radius: 1rem;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        .results-title {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: #f8fafc;
+        }
+
+        .score-circle {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            background: conic-gradient(var(--primary-color) 0%, rgba(255, 255, 255, 0.1) 0%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem auto;
+            position: relative;
+        }
+
+        .score-circle-inner {
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            background: #0f172a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .score-percent {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #38bdf8;
+        }
+
+        .score-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-item {
+            background: rgba(15, 23, 42, 0.6);
+            padding: 0.8rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-top: 0.2rem;
+        }
+
+        .stat-value.correct { color: #34d399; }
+        .stat-value.incorrect { color: #f87171; }
+
+        .bloom-breakdown {
+            margin-top: 1.5rem;
+            text-align: left;
+            background: rgba(15, 23, 42, 0.4);
+            padding: 1rem;
+            border-radius: 0.75rem;
+        }
+
+        .bloom-breakdown-title {
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 0.8rem;
+            color: #cbd5e1;
+        }
+
+        .bloom-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .restart-btn {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 0.5rem;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 1.5rem;
+        }
+
+        .restart-btn:hover {
+            opacity: 0.9;
+            transform: scale(1.02);
+        }
+
+        footer {
+            margin-top: 1.5rem;
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-card">
+            <div class="header-title-wrapper">
+                <svg class="palette-icon" viewBox="0 0 24 24">
+                    <path d="M12 2C6.49 2 2 6.49 2 12s4.49 10 10 10c1.38 0 2.5-1.12 2.5-2.5 0-.61-.23-1.21-.64-1.67-.08-.1-.13-.21-.13-.33 0-.28.22-.5.5-.5H16c3.31 0 6-2.69 6-6 0-4.96-4.49-9-10-9zm-5.5 11c-.83 0-1.5-.67-1.5-1.5S5.67 10 6.5 10s1.5.67 1.5 1.5S7.33 13 6.5 13zm3-4C8.67 9 8 8.33 8 7.5S8.67 6 9.5 6s1.5.67 1.5 1.5S10.33 9 9.5 9zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 6 14.5 6s1.5.67 1.5 1.5S15.33 9 14.5 9zm3 4c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+                </svg>
+                <h1>Өнгө судлал: Интерактив сорил</h1>
+            </div>
+            <div class="sub-header">8-р анги | Дүрслэх урлагийн хичээл (Блүмийн таксономи)</div>
+            
+            <div class="stats-bar">
+                <div>Асуулт: <span id="current-q-num">1</span> / <span id="total-q-num">12</span></div>
+                <div class="timer-badge">
+                    ⏱️ <span id="timer-display">00:00</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+
+        <!-- Quiz Section -->
+        <div class="quiz-card" id="quiz-card">
+            <div class="question-header">
+                <span class="bloom-badge" id="bloom-badge">Санах</span>
+            </div>
+
+            <div class="question-text" id="question-text">
+                Асуулт ачаалж байна...
+            </div>
+
+            <div class="options-grid" id="options-grid">
+                <!-- Options rendered dynamically -->
+            </div>
+
+            <div class="explanation-box" id="explanation-box">
+                <div class="explanation-title" id="explanation-title">Тайлан:</div>
+                <div class="explanation-text" id="explanation-text"></div>
+            </div>
+
+            <div class="controls">
+                <button class="next-btn" id="next-btn" onclick="nextQuestion()">Дараагийн асуулт ➔</button>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="results-card" id="results-card">
+            <h2 class="results-title">Тестийн үр дүн</h2>
+            
+            <div class="score-circle" id="score-circle">
+                <div class="score-circle-inner">
+                    <div class="score-percent" id="score-percent">0%</div>
+                </div>
+            </div>
+
+            <div class="score-details">
+                <div class="stat-item">
+                    <div style="font-size: 0.8rem; color: var(--text-muted);">Нийт оноо</div>
+                    <div class="stat-value" id="final-score">0/0</div>
+                </div>
+                <div class="stat-item">
+                    <div style="font-size: 0.8rem; color: var(--text-muted);">Зөв хариулт</div>
+                    <div class="stat-value correct" id="correct-count">0</div>
+                </div>
+                <div class="stat-item">
+                    <div style="font-size: 0.8rem; color: var(--text-muted);">Буруу хариулт</div>
+                    <div class="stat-value incorrect" id="incorrect-count">0</div>
+                </div>
+                <div class="stat-item">
+                    <div style="font-size: 0.8rem; color: var(--text-muted);">Зарцуулсан хугацаа</div>
+                    <div class="stat-value" id="final-time">00:00</div>
+                </div>
+            </div>
+
+            <div class="bloom-breakdown">
+                <div class="bloom-breakdown-title">Блүмийн түвшний гүйцэтгэл:</div>
+                <div id="bloom-stats-list"></div>
+            </div>
+
+            <button class="restart-btn" onclick="restartQuiz()">🔄 Дахин эхлүүлэх</button>
+        </div>
+    </div>
+
+    <footer>
+        8-р анги - Дүрслэх урлагийн хичээлд зориулав | Интерактив сургалтын систем
+    </footer>
+
+    <script>
+        const questionsData = [
+            // 1. Санах (Remembering)
+            {
+                bloomLevel: "1. Санах",
+                bloomClass: "bloom-1",
+                question: "Үндсэн (анхдагч) өнгөнүүдэд аль хэсэг хамаарагдах вэ?",
+                options: [
+                    "Улаан, Шар, Цэнхэр",
+                    "Ногоон, Улбар шар, Ягаан",
+                    "Хар, Цагаан, Саарал",
+                    "Улаан, Ногоон, Цэнхэр"
+                ],
+                correctIndex: 0,
+                explanation: "Зөв хариулт: А. Дүрслэх урлагт Улаан, Шар, Цэнхэр өнгийг бусад өнгийг хольж гаргаж авдаггүй тул ҮНДСЭН (анхдагч) өнгө гэж нэрлэдэг."
+            },
+            {
+                bloomLevel: "1. Санах",
+                bloomClass: "bloom-1",
+                question: "Хоёр үндсэн өнгийг хооронд нь ижил хэмжээгээр холиход ямар өнгө үүсдэг вэ?",
+                options: [
+                    "Үндсэн өнгө",
+                    "Үүсмэл (хоёрдогч) өнгө",
+                    "Саармаг өнгө",
+                    "Дулаан өнгө"
+                ],
+                correctIndex: 1,
+                explanation: "Зөв хариулт: B. Хоёр үндсэн өнгийг холиход үүсэж буй өнгийг үүсмэл буюу хоёрдогч өнгө (Улбар шар, Ногоон, Ягаан) гэнэ."
+            },
+
+            // 2. Олгох/Ойлгон ухаарах (Understanding)
+            {
+                bloomLevel: "2. Ойлгон ухаарах",
+                bloomClass: "bloom-2",
+                question: "Дулаан ба хүйтэн өнгөний сэтгэл зүйн ба харагдах байдлын ялгааг юу гэж тайлбарлах вэ?",
+                options: [
+                    "Дулаан өнгө нь холдож, хүйтэн өнгө нь ойртож харагддаг",
+                    "Дулаан өнгө нь сэргэг, ойртож харагддаг бол хүйтэн өнгө нь алсарч, тайван мэдрэмж төрүүлдэг",
+                    "Дулаан өнгөнд зөвхөн цэнхэр, хүйтэн өнгөнд зөвхөн шар өнгө орно",
+                    "Дулаан ба хүйтэн өнгө нь хүний сэтгэл зүйд ямар ч нөлөө үзүүлдэггүй"
+                ],
+                correctIndex: 1,
+                explanation: "Зөв хариулт: B. Улаан, шар, улбар шар зэрэг дулаан өнгөнүүд нь ойрхон, эрч хүчтэй харагддаг бол цэнхэр, ягаан, ногоон зэрэг хүйтэн өнгөнүүд нь алсарсан, алжаал тайлсан мэдрэмж төрүүлдэг."
+            },
+            {
+                bloomLevel: "2. Ойлгон ухаарах",
+                bloomClass: "bloom-2",
+                question: "Эсрэг (хөндлөн) өнгөнүүдийг өнгөний тойрог дээр хэрхэн байрладаг вэ?",
+                options: [
+                    "Бие биенийхээ яг эсрэг талд шууд харалдаа байрладаг",
+                    "Зэрэгцэн хажуу дараалан байрладаг",
+                    "Зөвхөн тойргийн төвд байрладаг",
+                    "Тойргийн гадна талд байрладаг"
+                ],
+                correctIndex: 0,
+                explanation: "Зөв хариулт: A. Эсрэг (комплементар) өнгөнүүд (жишээ нь: улаан-ногоон, цэнхэр-улбар шар) нь өнгөний тойрог дээр яг эсрэг харалдаа байрладаг бөгөөд бие биенийгээ тодруулж харагдуулдаг."
+            },
+
+            // 3. Хэрэглэх (Applying)
+            {
+                bloomLevel: "3. Хэрэглэх",
+                bloomClass: "bloom-3",
+                question: "Зураач байгалийн намар цагийн зургийг дулаан колориттой зурахыг хүсвэл ямар өнгөнүүдийг түлхүү ашиглах вэ?",
+                options: [
+                    "Цэнхэр, цэнхэр новдон, нил ягаан",
+                    "Шар, улбар шар, улаан, хүрэн",
+                    "Цагаан, саарал, хар",
+                    "Ногоон, хөх, цагаан"
+                ],
+                correctIndex: 1,
+                explanation: "Зөв хариулт: B. Намар цагийн дулаан уур амьсгалыг илэрхийлэхийн тулд шар, улбар шар, улаан, хүрэн зэрэг дулаан өнгөнүүдийг ашиглана."
+            },
+            {
+                bloomLevel: "3. Хэрэглэх",
+                bloomClass: "bloom-3",
+                question: "Хэрэв та цэнхэр ба шар өнгийг ижил хэмжээгээр холивол ямар өнгө гарах вэ?",
+                options: [
+                    "Улбар шар",
+                    "Ногоон",
+                    "Ягаан",
+                    "Хүрэн"
+                ],
+                correctIndex: 1,
+                explanation: "Зөв хариулт: B. Цэнхэр (үндсэн) болон Шар (үндсэн) өнгийг холиход Ногоон (дууссмалууд/хоёрдогч) өнгө үүсдэг."
+            },
+
+            // 4. Дүн шинжилгээ хийх (Analyzing)
+            {
+                bloomLevel: "4. Дүн шинжилгээ хийх",
+                bloomClass: "bloom-4",
+                question: "Зурагт улаан даашинзтай эмэгтэйг ногоон дэвсгэр дээр зуржээ. Энэ бүтээлд ямар контраст (ялгарал) ашигласан байна вэ?",
+                options: [
+                    "Нэг өнгөний туяаны контраст (Monochromatic)",
+                    "Эсрэг өнгөний контраст (Complementary contrast)",
+                    "Саармаг өнгөний контраст",
+                    "Аналог өнгөний зохицол"
+                ],
+                correctIndex: 1,
+                explanation: "Зөв хариулт: B. Улаан ба Ногоон өнгө нь өнгөний тойрог дээр эсрэг харалдаа байрладаг тул тэдгээрийг хамт хэрэглэх нь хамгийн хүчтэй эсрэг өнгөний буюу комплементар контрастыг үүсгэдэг."
+            },
+            {
+                bloomLevel: "4. Дүн шинжилгээ хийх",
+                bloomClass: "bloom-4",
+                question: "Өнгөний 'ханалт' (saturation) ба 'цайралт/бараантуулга' (value/lightness)-ийн ялгааг шинжилнэ үү.",
+                options: [
+                    "Ханалт нь өнгөний цэвэр тунгалаг байдлыг, цайралт нь өнгөнд цагаан эсвэл хар өнгө нэмсэн туяаг илэрхийлнэ",
+                    "Ханалт нь зөвхөн харанхуй байдлыг, цайралт нь зөвхөн дулаан байдлыг илэрхийлнэ",
+                    "Хоёулаа нэг ижил ойлголт тул ямар ч ялгаагүй",
+                    "Ханалт нь өнгөний нэрийг, цайралт нь өнгөний тойргийн байршлыг хэлнэ"
+                ],
+                correctIndex: 0,
+                explanation: "Зөв хариулт: A. Өнгөний ханалт нь өнгө хэр пигменттэй, цэвэр байгааг харуулдаг бол цайралт (тод/бүдэг) нь өнгө хэр гэрэлтэй эсвэл харанхуй байгааг илэрхийлдэг."
+            },
+
+            // 5. Үнэлэх (Evaluating)
+            {
+                bloomLevel: "5. Үнэлэх",
+                bloomClass: "bloom-5",
+                question: "Нэгэн номын хавтасны зураг дээр хар хөх дэвсгэр дээр хар ягаан бичвэр бичсэн нь уншигдахад хүндрэлтэй байв. Энэхүү өнгө сонголтод ямар үнэлгээ өгөх вэ?",
+                options: [
+                    "Маш сайн сонголт, учир нь ижил төстэй өнгөнүүд гоё харагдана",
+                    "Оновчгүй сонголт, учир нь цайралтын (value) контраст дутагдсанаас бичвэр тод харагдахгүй байна",
+                    "Төгс сонголт, учир нь эсрэг өнгөний контраст маш хүчтэй байна",
+                    "Өнгөний сонголт нь дизайн ба уншигдах чанарт огт нөлөөлөхгүй"
+                ],
+                correctIndex: 1,
+                explanation: "Зөв хариулт: B. Хар хөх ба хар ягаан нь хоёулаа бараан, цайралтын хувьд ойролцоо тул контраст муу үүсэж, уншигдах чадварыг бууруулсан оновчгүй сонголт болсон."
+            },
+            {
+                bloomLevel: "5. Үнэлэх",
+                bloomClass: "bloom-5",
+                question: "Зураач тайван, амаргалан орчныг дүрслэхийн тулд монохром (нэг өнгөний туяа) болон аналоги өнгөний зохицлыг сонгон авчээ. Энэ шийдлийг хэрхэн дүгнэх вэ?",
+                options: [
+                    "Буруу шийдэл, тайван байдлыг зөвхөн хар цагаанаар илэрхийлдэг",
+                    "Зөв шийдэл, учир нь хоорондоо ойролцоо ба нэг өнгөний туяанууд нь зөөлөн, тайван гармони үүсгэдэг",
+                    "Буруу шийдэл, заавал улаан, шар гэсэн эсрэг өнгө ашиглах ёстой",
+                    "Дүрслэх урлагт өнгөөр мэдрэмж илэрхийлэх боломжгүй"
+                ],
+                correctIndex: 1,
+                explanation: "Зөв хариулт: B. Монохром болон аналоги (зэрэгцээ) өнгөний зохицол нь огцом тэмцэлгүй, нэгдмэл, зөөлөн тайван уур амьсгалыг хамгийн сайн илэрхийлж чаддаг оновчтой шийдэл юм."
+            },
+
+            // 6. Бүтээх (Creating)
+            {
+                bloomLevel: "6. Бүтээх",
+                bloomClass: "bloom-6",
+                question: "Та 'Сансрын аялал' сэдэвт зураг зурах гэж байна. Нууцлаг, хязгааргүй орон зай ба гэрэлтэгч ододтой контраст үүсгэх өнгөний концепцийг хэрхэн зохиомжлох вэ?",
+                options: [
+                    "Бүх талбайг зөвхөн нэг төрлийн саарал өнгөөр будах",
+                    "Гүн цэнхэр, ягаан, хар гэсэн хүйтэн ба бараан дэвсгэр дээр тод шар, цагаан, цайвар цэнхэр гэрэлтэгч акцент өнгө ашиглах",
+                    "Зөвхөн дулаан бор, шороон өнгөнүүдийг жигд хэрэглэх",
+                    "Зөвхөн улаан ба шар өнгийг хооронд нь холихгүйгээр ашиглах"
+                ],
+                correctIndex: 1,
+                explanation: "Зөв хариулт: B. Гүн бараан хүйтэн өнгөний дэвсгэр нь сансрын нууцлаг байдлыг бүтээх ба дээр нь тод гэрэлтэгч шар, цагаан өнгийг акцент болгон ашиглах нь хамгийн оновчтой бүтээлч концепци юм."
+            },
+            {
+                bloomLevel: "6. Бүтээх",
+                bloomClass: "bloom-6",
+                question: "Хэрэв та байгаль орчноо хамгаалах плакат (постер) залууст зориулж төлөвлөж байгаа бол анхаарал татах, аюулыг сануулах өнгөний зохиомжийг хэрхэн бүтээх вэ?",
+                options: [
+                    "Аюулыг сануулах улаан/улбар шар өнгийг байгалийн ногоон ба эсрэг бараан фоноор тодруулан, анхаарал татах цэг үүсгэх",
+                    "Хэн ч анзаарахааргүй пастель цайвар ягаан өнгөөр бүх зүйлийг ижил зурах",
+                    "Зөвхөн цагаан дэвсгэр дээр цагаан текст бичих",
+                    "Зөвхөн нэг өнгөний туяаг ямар ч контрастгүй хэрэглэх"
+                ],
+                correctIndex: 0,
+                explanation: "Зөв хариулт: A. Улаан/улбар шар нь аюул ба анхаарлын дохио өгдөг бөгөөд үүнийг байгалийг илэрхийлэх ногоон өнгөтэй эсрэгцүүлэн зохиомжлох нь постерийн нөлөөллийг хамгийн өндөр болгоно."
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let timerSeconds = 0;
+        let timerInterval = null;
+        let userAnswers = [];
+
+        // DOM elements
+        const currentQNumEl = document.getElementById('current-q-num');
+        const totalQNumEl = document.getElementById('total-q-num');
+        const timerDisplayEl = document.getElementById('timer-display');
+        const progressBarEl = document.getElementById('progress-bar');
+        const bloomBadgeEl = document.getElementById('bloom-badge');
+        const questionTextEl = document.getElementById('question-text');
+        const optionsGridEl = document.getElementById('options-grid');
+        const explanationBoxEl = document.getElementById('explanation-box');
+        const explanationTextEl = document.getElementById('explanation-text');
+        const nextBtnEl = document.getElementById('next-btn');
+
+        const quizCardEl = document.getElementById('quiz-card');
+        const resultsCardEl = document.getElementById('results-card');
+
+        window.onload = function() {
+            totalQNumEl.textContent = questionsData.length;
+            startTimer();
+            loadQuestion();
+        };
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerSeconds = 0;
+            timerInterval = setInterval(() => {
+                timerSeconds++;
+                const mins = Math.floor(timerSeconds / 60).toString().padStart(2, '0');
+                const secs = (timerSeconds % 60).toString().padStart(2, '0');
+                timerDisplayEl.textContent = `${mins}:${secs}`;
+            }, 1000);
+        }
+
+        function loadQuestion() {
+            const currentQ = questionsData[currentQuestionIndex];
+            
+            currentQNumEl.textContent = currentQuestionIndex + 1;
+            progressBarEl.style.width = `${((currentQuestionIndex) / questionsData.length) * 100}%`;
+
+            bloomBadgeEl.textContent = currentQ.bloomLevel;
+            bloomBadgeEl.className = `bloom-badge ${currentQ.bloomClass}`;
+
+            questionTextEl.textContent = currentQ.question;
+
+            optionsGridEl.innerHTML = '';
+            explanationBoxEl.classList.remove('show');
+            nextBtnEl.style.display = 'none';
+
+            const prefixes = ['A', 'B', 'C', 'D'];
+
+            currentQ.options.forEach((optionText, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.onclick = () => selectOption(index);
+
+                btn.innerHTML = `
+                    <span class="option-prefix">${prefixes[index]}</span>
+                    <span>${optionText}</span>
+                `;
+
+                optionsGridEl.appendChild(btn);
+            });
+        }
+
+        function selectOption(selectedIndex) {
+            const currentQ = questionsData[currentQuestionIndex];
+            const buttons = optionsGridEl.querySelectorAll('.option-btn');
+
+            // Disable all buttons
+            buttons.forEach(btn => btn.disabled = true);
+
+            const isCorrect = selectedIndex === currentQ.correctIndex;
+            if (isCorrect) {
+                score++;
+                buttons[selectedIndex].classList.add('correct');
+            } else {
+                buttons[selectedIndex].classList.add('incorrect');
+                buttons[currentQ.correctIndex].classList.add('correct');
+            }
+
+            // Save user history
+            userAnswers.push({
+                question: currentQ.question,
+                bloomLevel: currentQ.bloomLevel,
+                isCorrect: isCorrect
+            });
+
+            // Show explanation
+            explanationTextEl.textContent = currentQ.explanation;
+            explanationBoxEl.classList.add('show');
+
+            // Show Next / Finish button
+            if (currentQuestionIndex < questionsData.length - 1) {
+                nextBtnEl.textContent = 'Дараагийн асуулт ➔';
+            } else {
+                nextBtnEl.textContent = 'Үр дүн харах 🏆';
+            }
+            nextBtnEl.style.display = 'block';
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questionsData.length) {
+                loadQuestion();
+            } else {
+                finishQuiz();
+            }
+        }
+
+        function finishQuiz() {
+            clearInterval(timerInterval);
+            progressBarEl.style.width = '100%';
+
+            quizCardEl.style.display = 'none';
+            resultsCardEl.style.display = 'block';
+
+            // Calculate percentage
+            const percentage = Math.round((score / questionsData.length) * 100);
+            document.getElementById('score-percent').textContent = `${percentage}%`;
+            document.getElementById('final-score').textContent = `${score}/${questionsData.length}`;
+            document.getElementById('correct-count').textContent = score;
+            document.getElementById('incorrect-count').textContent = questionsData.length - score;
+
+            // Timer display
+            const mins = Math.floor(timerSeconds / 60).toString().padStart(2, '0');
+            const secs = (timerSeconds % 60).toString().padStart(2, '0');
+            document.getElementById('final-time').textContent = `${mins}:${secs}`;
+
+            // Score Circle CSS Gradient
+            const scoreCircle = document.getElementById('score-circle');
+            scoreCircle.style.background = `conic-gradient(#10b981 0% ${percentage}%, rgba(255, 255, 255, 0.1) ${percentage}% 100%)`;
+
+            // Render Bloom Breakdown
+            renderBloomBreakdown();
+        }
+
+        function renderBloomBreakdown() {
+            const bloomStatsList = document.getElementById('bloom-stats-list');
+            bloomStatsList.innerHTML = '';
+
+            const bloomMap = {};
+
+            userAnswers.forEach(ans => {
+                if (!bloomMap[ans.bloomLevel]) {
+                    bloomMap[ans.bloomLevel] = { total: 0, correct: 0 };
+                }
+                bloomMap[ans.bloomLevel].total++;
+                if (ans.isCorrect) {
+                    bloomMap[ans.bloomLevel].correct++;
+                }
+            });
+
+            for (const [level, stat] of Object.entries(bloomMap)) {
+                const row = document.createElement('div');
+                row.className = 'bloom-row';
+
+                const percent = Math.round((stat.correct / stat.total) * 100);
+
+                row.innerHTML = `
+                    <span>${level}:</span>
+                    <span style="font-weight:700; color: ${percent >= 50 ? '#34d399' : '#f87171'}">
+                        ${stat.correct}/${stat.total} (${percent}%)
+                    </span>
+                `;
+
+                bloomStatsList.appendChild(row);
+            }
+        }
+
+        function restartQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            userAnswers = [];
+
+            resultsCardEl.style.display = 'none';
+            quizCardEl.style.display = 'flex';
+
+            startTimer();
+            loadQuestion();
+        }
+    </script>
+</body>
+</html>
